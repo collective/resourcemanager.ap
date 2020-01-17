@@ -1,0 +1,4 @@
+graft src/resourcemanager
+graft docs
+include *.rst
+global-exclude *.pyc

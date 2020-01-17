@@ -1,0 +1,5 @@
+==================
+resourcemanager.ap
+==================
+
+User documentation

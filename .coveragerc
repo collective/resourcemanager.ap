@@ -1,0 +1,6 @@
+[report]
+include =
+    src/resourcemanager/*
+omit =
+    */test*
+    */upgrades/*
