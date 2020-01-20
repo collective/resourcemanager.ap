@@ -28,10 +28,14 @@ class APSearch(BrowserView):
         self.search_context = 'ap-search'
 
     def query_ap(self, query):
-        query_url = 'https://api.ap.org/media/v1.1/content/search'
-        options = '&page_size=20'
-        key_param = '&apikey=' + self.rs_api_key
-        request_url = query_url + '?' + query + key_param + options
+        query_url = 'https://api.ap.org/media/v1.1/content/'
+        key_param = 'apikey=' + self.rs_api_key
+        if 'q=' in query:
+            query_url += 'search?'
+            options = '&page_size=20'
+            request_url = query_url + query + '&' + key_param + options
+        else:
+            request_url = query_url + query + '?' + key_param
         try:
             response = requests.get(request_url, timeout=5)
         except (exc.ConnectTimeout, exc.ConnectionError) as e:
@@ -66,6 +70,7 @@ class APSearch(BrowserView):
                     main_size['width'], main_size['height']),
                 'url': item['item']['renditions']['preview']['href'] + '&apikey=' + self.rs_api_key,
                 'metadata': item['item'],
+                'additional_details': '$: ' + main_size.get('pricetag'),
             }
         return images
 
@@ -120,6 +125,7 @@ class APSearch(BrowserView):
                 'b_end': num_results > b_end and b_end or num_results,
                 'num_batches': math.ceil(num_results / b_size),
                 'curr_batch': batch,
+                'copy_url': 'copy-img-from-ap',
                 })
         return self.template()
 
@@ -134,54 +140,48 @@ class APCopy(BrowserView):
     def __init__(self, context, request):
         self.context = context
         self.request = request
+        reg_prefix = 'resourcemanager.ap.settings.IAPKeys'
+        self.rs_api_key = context.portal_registry['{0}.api_key'.format(reg_prefix)]
         self.rssearch = APSearch(context, request)
 
     def valid_image(self, img_url):
         # test if image url is valid
         try:
-            img_response = requests.get(img_url)
+            request_url = img_url + '&apikey=' + self.rs_api_key
+            img_response = requests.get(request_url)
         except (exc.ConnectTimeout, exc.ConnectionError):
             return None
         if img_response.status_code != 200:
             return None
         try:
-            Image.open(requests.get(img_url, stream=True).raw)
+            Image.open(requests.get(request_url, stream=True).raw)
         except OSError:
             return None
-        return (img_response, img_url)
+        return (img_response, request_url)
 
     def __call__(self):
         """Return original image size
            If function is 'geturl', return the image url
            If function is 'copyimage', copy image into the current folder
         """
-        breakpoint()
         img_function = self.request.form.get('function')
         img_id = self.request.form.get('id')
         img_url = self.request.form.get('image')  # preview size
         if not img_url:
             return "Image ID not found"
-        # get original image size
-        sizes_query = '&function=get_resource_path&param1={0}&param2=false&param3='.format(
-            img_id
-        )
-        img_orig_url = self.rssearch.query_ap(sizes_query)
-        for size in [img_orig_url, img_url]:
-            img_response = self.valid_image(size)
-            if img_response:
-                break
-        if not img_response:
-            return "Unable to find a valid image url"
+        query = img_id
+        response = self.rssearch.query_ap(query)
+        if not response:
+            return "Item not found"
+        img_metadata = response['data']['item']
+        original_size_url = self.valid_image(img_metadata['renditions']['main']['href'])
+        if not original_size_url:
+            return "Item not found"
         if img_function == 'geturl':
-            return img_response[1]
+            return original_size_url[1]
         if img_function == 'copyimage':
             blob = NamedBlobImage(
-                data=img_response[0].content)
-            query = '&function=get_resource_field_data&param1={0}'.format(
-                img_id
-            )
-            response = self.rssearch.query_ap(query)
-            img_metadata = {x['title']: x['value'] for x in response}
+                data=original_size_url[0].content)
             new_image = api.content.create(
                 type='Image',
                 image=blob,
