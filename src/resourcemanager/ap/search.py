@@ -97,7 +97,7 @@ class APSearch(BrowserView):
         if not search_term:
             self.messages.append('Missing search term')
         search_term = urllib.parse.quote_plus(form['rs_search'])
-        query = 'q={}'.format(search_term)
+        query = 'q=type:picture+AND+{}'.format(search_term)
         response = self.query_ap(query)
         if not response:
             if form.get('type', '') == 'json':
