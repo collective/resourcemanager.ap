@@ -29,18 +29,21 @@ class APSearch(BrowserView):
         self.messages = []
         self.search_context = 'ap-search'
 
-    def query_ap(self, query):
+    def query_ap(self, query, search_id='', batch_size=20, batch=1):
         query_url = 'https://api.ap.org/media/v1.1/content/'
         key_param = 'apikey=' + self.rs_api_key
-        if 'q=' in query:
+        if search_id:
+            query_url += 'search?qt={0}&page={1}'.format(search_id, batch)
+            request_url = query_url + '&' + key_param
+        elif 'q=' in query:
             query_url += 'search?'
-            options = '&page_size=20'
-            request_url = query_url + query + '&' + key_param + options
+            options = '&page_size={}'.format(batch_size)
+            request_url = query_url + query + options + '&' + key_param
         else:
             request_url = query_url + query + '?' + key_param
         try:
             response = requests.get(request_url, timeout=5)
-        except (exc.ConnectTimeout, exc.ConnectionError) as e:
+        except (exc.ConnectTimeout, exc.ConnectionError, exc.ReadTimeout) as e:
             self.messages.append(str(e))
             return []
         if response.status_code != 200:
@@ -80,6 +83,8 @@ class APSearch(BrowserView):
         form = self.request.form
         search_term = form.get('rs_search')
         batch = int(form.get('batch'))
+        extras = json.loads(form.get('extras', {}))
+        search_id = extras.get('search_id', '')
         b_size = 20
         b_start = (batch - 1) * b_size + 1
         b_end = b_start + b_size
@@ -98,7 +103,7 @@ class APSearch(BrowserView):
             self.messages.append('Missing search term')
         search_term = urllib.parse.quote_plus(form['rs_search'])
         query = 'q=type:picture+AND+{}'.format(search_term)
-        response = self.query_ap(query)
+        response = self.query_ap(query, search_id, b_size, batch)
         if not response:
             if form.get('type', '') == 'json':
                 return json.dumps({
@@ -107,7 +112,8 @@ class APSearch(BrowserView):
                     'metadata': self.image_metadata,
                     })
             return self.template()
-        num_results = len(response)  # this will need to change
+        search_id = response['id']
+        num_results = response['data']['total_items']
         self.image_metadata = self.parse_metadata(response)
         if not self.image_metadata and not self.messages:
             self.messages.append("No images found")
@@ -128,6 +134,7 @@ class APSearch(BrowserView):
                 'num_batches': math.ceil(num_results / b_size),
                 'curr_batch': batch,
                 'copy_url': 'copy-img-from-ap',
+                'extras': {'search_id': search_id},
                 })
         return self.template()
 
