@@ -29,11 +29,11 @@ class APSearch(BrowserView):
         self.messages = []
         self.search_context = 'ap-search'
 
-    def query_ap(self, query, search_id='', batch_size=20, batch=1):
+    def query_ap(self, query, search_token='', batch_size=20, batch=1):
         query_url = 'https://api.ap.org/media/v1.1/content/'
         key_param = 'apikey=' + self.rs_api_key
-        if search_id:
-            query_url += 'search?qt={0}&page={1}'.format(search_id, batch)
+        if search_token:
+            query_url += 'search?qt={0}&page={1}'.format(search_token, batch)
             request_url = query_url + '&' + key_param
         elif 'q=' in query:
             query_url += 'search?'
@@ -84,7 +84,7 @@ class APSearch(BrowserView):
         search_term = form.get('rs_search')
         batch = int(form.get('batch'))
         extras = json.loads(form.get('extras', {}))
-        search_id = extras.get('search_id', '')
+        search_token = extras.get('search_token', '')
         b_size = 20
         b_start = (batch - 1) * b_size + 1
         b_end = b_start + b_size
@@ -103,7 +103,7 @@ class APSearch(BrowserView):
             self.messages.append('Missing search term')
         search_term = urllib.parse.quote_plus(form['rs_search'])
         query = 'q=type:picture+AND+{}'.format(search_term)
-        response = self.query_ap(query, search_id, b_size, batch)
+        response = self.query_ap(query, search_token, b_size, batch)
         if not response:
             if form.get('type', '') == 'json':
                 return json.dumps({
@@ -112,7 +112,7 @@ class APSearch(BrowserView):
                     'metadata': self.image_metadata,
                     })
             return self.template()
-        search_id = response['id']
+        search_token = response['id']
         num_results = response['data']['total_items']
         self.image_metadata = self.parse_metadata(response)
         if not self.image_metadata and not self.messages:
@@ -134,7 +134,7 @@ class APSearch(BrowserView):
                 'num_batches': math.ceil(num_results / b_size),
                 'curr_batch': batch,
                 'copy_url': 'copy-img-from-ap',
-                'extras': {'search_id': search_id},
+                'extras': {'search_token': search_token},
                 })
         return self.template()
 
