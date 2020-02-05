@@ -121,8 +121,8 @@ class APSearch(BrowserView):
         if self.context.portal_type == 'Folder':
             existing = search.existing_copies(self.context)
         for item in self.image_metadata:
-            url = self.image_metadata[item]['url']
-            self.image_metadata[item]['exists'] = url in existing
+            id = 'ap-{}'.format(self.image_metadata[item]['id'])
+            self.image_metadata[item]['exists'] = id in existing
         if form.get('type', '') == 'json':
             return json.dumps({
                 'search_context': self.search_context,
@@ -196,7 +196,7 @@ class APCopy(BrowserView):
                 image=blob,
                 container=self.context,
                 title=self.request.form.get('title'),
-                external_url=img_url,  # use preview size
+                external_img_id='ap-{}'.format(img_id),
                 description=str(img_metadata),
             )
             return "Image copied to <a href='{0}/view'>{0}</a>".format(
