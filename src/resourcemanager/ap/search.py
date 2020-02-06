@@ -182,8 +182,9 @@ class APCopy(BrowserView):
         response = self.rssearch.query_ap(query)
         if not response:
             return "Item not found"
-        img_metadata = response['data']['item']
-        original_size_url = self.valid_image(img_metadata['renditions']['main']['href'])
+        item = response['data']['item']
+        img_metadata = ['{0}: {1}'.format(x, item[x]) for x in item]
+        original_size_url = self.valid_image(item['renditions']['main']['href'])
         if not original_size_url:
             return "Item not found"
         if img_function == 'geturl':
@@ -197,7 +198,7 @@ class APCopy(BrowserView):
                 container=self.context,
                 title=self.request.form.get('title'),
                 external_img_id='ap-{}'.format(img_id),
-                description=str(img_metadata),
+                resource_metadata='\n'.join(img_metadata),
             )
             return "Image copied to <a href='{0}/view'>{0}</a>".format(
                 new_image.absolute_url())
