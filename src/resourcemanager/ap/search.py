@@ -117,9 +117,7 @@ class APSearch(BrowserView):
         self.image_metadata = self.parse_metadata(response)
         if not self.image_metadata and not self.messages:
             self.messages.append("No images found")
-        existing = []
-        if self.context.portal_type == 'Folder':
-            existing = search.existing_copies(self.context)
+        existing = search.existing_copies(self.context)
         for item in self.image_metadata:
             id = 'ap-{}'.format(self.image_metadata[item]['id'])
             self.image_metadata[item]['exists'] = id in existing
@@ -195,7 +193,7 @@ class APCopy(BrowserView):
             new_image = api.content.create(
                 type='Image',
                 image=blob,
-                container=self.context,
+                container=search.get_container(self.context),
                 title=self.request.form.get('title'),
                 external_img_id='ap-{}'.format(img_id),
                 resource_metadata='\n'.join(img_metadata),
