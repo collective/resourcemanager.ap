@@ -195,6 +195,7 @@ class APCopy(BrowserView):
                 image=blob,
                 container=search.get_container(self.context),
                 title=self.request.form.get('title'),
+                description=item['description_caption'],
                 external_img_id='ap-{}'.format(img_id),
                 resource_metadata='\n'.join(img_metadata),
             )
