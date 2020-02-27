@@ -186,7 +186,10 @@ class APCopy(BrowserView):
         if not original_size_url:
             return "Item not found"
         if img_function == 'geturl':
-            return original_size_url[1]
+            return json.dumps({
+                'img_url': original_size_url[1],
+                'img_id': 'ap-{}'.format(img_id)
+                })
         if img_function == 'copyimage':
             blob = NamedBlobImage(
                 data=original_size_url[0].content)
