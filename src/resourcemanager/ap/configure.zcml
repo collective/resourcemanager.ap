@@ -60,6 +60,12 @@
       class=".search.APCopy"
       />
 
+  <subscriber
+    for="plone.app.contenttypes.interfaces.IImage
+         zope.lifecycleevent.interfaces.IObjectAddedEvent"
+    handler=".events.store_image_metadata"
+    />
+
   <!-- -*- extra stuff goes here -*- -->
 
 </configure>
