@@ -65,6 +65,13 @@
          zope.lifecycleevent.interfaces.IObjectAddedEvent"
     handler=".events.store_image_metadata"
     />
+    
+  <subscriber
+    for="collective.resourcemanager.browser.behaviors.IImageResourceData
+         zope.lifecycleevent.interfaces.IObjectModifiedEvent"
+    handler=".events.store_image_metadata"
+   />
+    
 
   <!-- -*- extra stuff goes here -*- -->
 
