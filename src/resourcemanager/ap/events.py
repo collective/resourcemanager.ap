@@ -19,8 +19,7 @@ def store_image_metadata(obj, event):
     if not obj.description:
         obj.description = item.get('description_caption', '')
     # rs_data = img_data['resource_metadata']
-    data_str = '\n'.join(['{0}: {1}'.format(x, item[x]) for x in item])
-    obj.resource_metadata = data_str
+    obj.resource_metadata = item
     obj.rights = item.get('copyrightnotice', '')
     obj.reindexObject()
 
