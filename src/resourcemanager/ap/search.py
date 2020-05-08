@@ -188,7 +188,8 @@ class APCopy(BrowserView):
         if img_function == 'geturl':
             return json.dumps({
                 'img_url': original_size_url[1],
-                'img_id': 'ap-{}'.format(img_id)
+                'img_id': 'ap-{}'.format(img_id),
+                'description': item.get('description_caption',''),
                 })
         if img_function == 'copyimage':
             blob = NamedBlobImage(
