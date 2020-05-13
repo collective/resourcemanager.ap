@@ -9,7 +9,7 @@ logger = logging.getLogger("AssociatedPress")
 
 def store_image_metadata(obj, event):
     resource_id = obj.external_img_id
-    if 'ap-' not in resource_id:
+    if resource_id is None or 'ap-' not in resource_id:
         return
     apsearch = APSearch(obj, obj.REQUEST)
     response = apsearch.query_ap(resource_id.replace('ap-', ''))
