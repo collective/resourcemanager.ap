@@ -30,7 +30,7 @@ class APSearch(BrowserView):
         self.search_context = 'ap-search'
 
     def query_ap(self, query, search_token='', batch_size=20, batch=1):
-        query_url = 'https://api.ap.org/media/v1.1/content/'
+        query_url = 'https://api.ap.org/media/v/content/'
         key_param = 'apikey=' + self.rs_api_key
         if search_token and batch > 1:
             query_url += 'search?qt={0}&page={1}'.format(search_token, batch)
