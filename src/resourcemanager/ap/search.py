@@ -70,6 +70,7 @@ class APSearch(BrowserView):
                 'title': item['item']['headline'],
                 'id': item_id,
                 'creation_date': item['item']['firstcreated'],
+                'description': item['item']['description_caption'],
                 'file_extension': main_size['fileextension'],
                 'image_size': '{0}x{1}'.format(
                     main_size['width'], main_size['height']),
