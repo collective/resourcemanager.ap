@@ -31,18 +31,19 @@ class APSearch(BrowserView):
 
     def query_ap(self, query, search_token='', batch_size=20, batch=1):
         query_url = 'https://api.ap.org/media/v/content/'
-        key_param = 'apikey=' + self.rs_api_key
+        headers = {'x-api-key': self.rs_api_key}
         if search_token and batch > 1:
             query_url += 'search?qt={0}&page={1}'.format(search_token, batch)
-            request_url = query_url + '&' + key_param
+            request_url = query_url + '&'
         elif 'q=' in query:
             query_url += 'search?'
             options = '&page_size={}'.format(batch_size)
-            request_url = query_url + query + options + '&' + key_param
+            request_url = query_url + query + options
         else:
-            request_url = query_url + query + '?' + key_param
+            request_url = query_url + query + '?'
+
         try:
-            response = requests.get(request_url, timeout=5)
+            response = requests.get(request_url, headers = headers, timeout=5)
         except (exc.ConnectTimeout, exc.ConnectionError, exc.ReadTimeout) as e:
             self.messages.append(str(e))
             return []
@@ -74,7 +75,7 @@ class APSearch(BrowserView):
                 'file_extension': main_size['fileextension'],
                 'image_size': '{0}x{1}'.format(
                     main_size['width'], main_size['height']),
-                'url': item['item']['renditions']['preview']['href'] + '&apikey=' + self.rs_api_key,
+                'url': item['item']['renditions']['preview']['href'],
                 'metadata': item['item'],
                 'additional_details': '$: ' + main_size.get('pricetag'),
             }
