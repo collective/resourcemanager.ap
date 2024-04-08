@@ -34,13 +34,13 @@ class APSearch(BrowserView):
         headers = {'x-api-key': self.rs_api_key}
         if search_token and batch > 1:
             query_url += 'search?qt={0}&page={1}'.format(search_token, batch)
-            request_url = query_url + '&'
+            request_url = query_url
         elif 'q=' in query:
             query_url += 'search?'
             options = '&page_size={}'.format(batch_size)
             request_url = query_url + query + options
         else:
-            request_url = query_url + query + '?'
+            request_url = query_url + query
 
         try:
             response = requests.get(request_url, headers = headers, timeout=5)
